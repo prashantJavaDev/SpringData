@@ -1,0 +1,392 @@
+	
+	loding linking initialuization
+	bootstarp class loader
+	application class loader
+	exerternal class loader
+	
+	
+	linkik
+	verification
+	preparation
+	resolution
+	
+	initialization
+	all static and loacl variable
+	
+		
+The cross-cutting concern is a concern which is applicable throughout the application.
+ This affects the entire application. For example, logging, security and data transfer are the concerns needed in almost every module of an application,
+ thus they are the cross-cutting concerns. 
+
+
+
+	Data access								web mvc
+  jdbc orm oxm transaction jms  			 web  portlet websocket servlet
+  
+  Aop 		aspects		 instrumentation	 messaging
+											
+							Core container
+					Core 	Beans	Context 	SpEL
+
+					TEST
+
+
+Dependency injection 
+setter
+constructor
+
+Autowiring modes
+Autodetect constructor first and then type
+byName spellChecker
+byType SpellChecker
+constructor does byType but in constructor
+
+Annotation
+@Required
+@Autowired
+
+<context:annotation-config> for annotation based config
+
+AnnotationConfigApplicationContext for @Java based annotations
+
+Event handling bean implements ApplicationListener<Event> interface and onApplicationEvent(Event event) method in it.
+
+Custom event : extend ApplicationEvent and have properties from super.
+
+Publish the event using ApplicationEventPublisherAware interface and methods in it  public void setApplicationEventPublisher (ApplicationEventPublisher publisher)
+ and public void publish()
+
+ ConfigurableApplicationContext context = 
+         new ClassPathXmlApplicationContext("Beans.xml");
+
+AOP Framework
+
+1	
+Aspect(cross)
+
+This is a module which has a set of APIs providing cross-cutting requirements. For example, a logging module would be called AOP aspect for logging. An application can have any number of aspects depending on the requirement.
+
+2	
+Join point(where)
+
+This represents a point in your application where you can plug-in the AOP aspect. You can also say, it is the actual place in the application where an action 
+will be taken using Spring AOP framework.
+
+3	
+Advice(wat action)
+
+This is the actual action to be taken either before or after the method execution. This is an actual piece of code that is invoked during the program execution by Spring AOP framework.
+
+4	
+Pointcut(expression)
+
+This is a set of one or more join points where an advice should be executed. You can specify pointcuts using expressions or patterns as we will see in our AOP examples.
+
+5	
+Introduction
+
+An introduction allows you to add new methods or attributes to the existing classes.
+
+6	
+Target object
+
+The object being advised by one or more aspects. This object will always be a proxied object, also referred to as the advised object.
+
+7	
+Weaving
+
+Weaving is the process of linking aspects with other application types or objects to create an advised object. This can be done at compile time, load time, or at runtime
+
+xml based Aop
+
+<aop:config>
+<aop:aspect id="logging" ref="logBean">
+	<aop:pointcut id="select-all" expression="execution(com.tutorialpoint.Student.getName(..))"/>
+	<aop:before pointcut-ref="select-all" method="beforeAdvice"/>
+   <aop:after pointcut-ref="select-all" method="afterAdvice"/>
+</aop:aspect>
+</aop:config>
+
+Types of advice
+before
+after
+after-returning
+after-throwing
+around
+
+<aop:aspectj-autoproxy/> to do AOP through AspectJ i.e annotations
+
+@Aspect
+
+@Pointcut("execution(* com.tutorialspoint.Student.getName(..))")
+@Before("businessService()")
+@After("businessService()")
+@AfterReturning(pointcut = "businessService()", returning = "retVal")
+@AfterThrowing(pointcut = "businessService()", throwing = "ex")
+@Around("businessService()")
+@Before("execution(* com.xyz.myapp.service.*.*(..))")
+
+Create datasource in Beans.xml
+
+<bean id="datasource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+<property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+<property name="url" value="jdbc:mysql://localhost:3306/TEST"/>
+<property name="username" value="root"/>
+<property name="password" value="password"/>
+
+
+String sql="Select * from student where id=?";
+Student student=jdbcTemplateObject.queryForObject(sql,new Object[]{10},new StudentMapper());
+
+String sql="Select * from student";
+List<Student> student=jdbcTemplateObject.query(sql,new StudentMapper());
+
+public Class StudentMapper implements RowMapper<Student>
+{
+      public Student mapRow(ResultSet rs,int rowNum) throws Exception
+	  {
+	       Student student=new Student();
+		   student.setID(rs.getInt("id"));
+		   student.setName(rs.getString("name"));
+		   student.setAge(rs.getInt("age"));
+	  
+	  return student;
+
+	  }
+     
+
+}	
+
+https://www.tutorialspoint.com/spring/spring_jdbc_example.htm
+
+public class StudentJDBCTemplate implements StudentDAO {
+   private DataSource dataSource;
+   private JdbcTemplate jdbcTemplateObject;
+   
+   public void setDataSource(DataSource dataSource) {
+      this.dataSource = dataSource;
+      this.jdbcTemplateObject = new JdbcTemplate(dataSource);
+   }}
+   
+    public void create(String name, Integer age) {
+      String SQL = "insert into Student (name, age) values (?, ?)";
+      jdbcTemplateObject.update( SQL, name, age);
+      System.out.println("Created Record Name = " + name + " Age = " + age);
+      return;
+   }
+   
+    context:annotation-config
+   
+   Spring mvc 
+   
+					Dispatcher servlet
+						1					2			3			4
+                   Handler mapping     Controller   View Resolver   View
+   
+   
+   Web.xml  : servlet name and servlet mapping
+   
+   <context:component-scan> to enable spring mvc annotation scanning
+	<mvc:resources mapping = "/pages/**" location = "/WEB-INF/pages/" />    // FOR STATIC PAGES
+   <mvc:annotation-driven/>
+   
+   Annotations : @RequestMapping. @Controller
+   
+   Exception 
+   
+    <bean class = "org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+      <property name = "exceptionMappings">
+         <props>
+            <prop key = "com.tutorialspoint.SpringException">
+               ExceptionPage
+            </prop>
+         </props>
+      </property>
+      <property name = "defaultErrorView" value = "error"/>
+   </bean>
+   
+   
+   Controller Based   : @ExceptionHandler
+   Global Exception Handler : @ControllerAdvice
+   HandlerExceptionResolver  : HandlerExceptionResolver interface that we can implement to create global exception handler
+   
+   Internationalization : localResolver 
+     
+   
+   <!-- Configure to plugin JSON as request and response in method handler -->
+	<beans:bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+	
+	Interceptors
+	For simplicity, I am extending abstract class HandlerInterceptorAdapter. HandlerInterceptorAdapter is abstract adapter class for the
+ HandlerInterceptor interface, for simplified implementation of pre-only/post-only interceptors.
+	
+	public class RequestProcessingTimeInterceptor extends HandlerInterceptorAdapter {
+	        
+			@Override
+
+
+
+public boolean preHandle(HttpServletRequest request,
+			HttpServletResponse response, Object handler) throws Exception
+			
+			@Override
+	public void postHandle(HttpServletRequest request,
+			HttpServletResponse response, Object handler,
+			ModelAndView modelAndView) throws Exception {
+			
+			@Override
+	public void afterCompletion(HttpServletRequest request,
+			HttpServletResponse response, Object handler, Exception ex) throws Exception {
+			
+			
+			Validation
+			
+			@Constraint(validatedBy = PhoneValidator.class)
+			
+			public class PhoneValidator implements ConstraintValidator<Phone, String> {
+
+	@Override
+	public void initialize(Phone paramA) {
+	}
+
+	@Override
+	public boolean isValid(String phoneNo, ConstraintValidatorContext ctx) {
+	
+	Our JSR-303 specs validator implementation should implement javax.validation.ConstraintValidator interface. If we are using some resource such as DataSource, we can initialize them in the initialize() method. The validation method is isValid and it returns true if data is valid else it should return false.
+	
+	Validator interface
+	public class EmployeeFormValidator implements Validator {
+
+	//which objects can be validated by this validator
+	@Override
+	public boolean supports(Class<?> paramClass) {
+		return Employee.class.equals(paramClass);
+	}
+
+	@Override
+	public void validate(Object obj, Errors errors) {
+	
+	validator implementation that is specific to Spring Framework. supports() method implementation by Spring Framework to know objects on which this
+ validation can be used.
+
+We implement validate() method and add errors if any field validation fails. Spring provides org.springframework.validation.ValidationUtils utility class
+ for basic validations such as null or empty. Once this method returns, spring framework binds the Errors object to the BindingResult object that we use in 
+our controller handler method.
+
+Notice that ValidationUtils.rejectIfEmptyOrWhitespace() last argument takes the key name for message resources. 
+This way we can provide localized error messages to the user. For more information about i18n in Spring
+
+For using custom validator, first we need to inject it in the controller class. We are using spring bean auto wiring to achieve this using @Autowired and @Qualifier annotations.
+
+Next we need to have a method that will take WebDataBinder as argument and we set our custom validator to be used.
+ This method should be annotated with @InitBinder annotation.
+
+Using @ModelAttribute is another way to add our bean object to the Model. Rest of the code is similar to customer controller implementation.
+
+How to inject a java.util.Properties into a Spring Bean?
+We need to define propertyConfigurer bean that will load the properties from the given property file. Then we can use Spring EL support to
+ inject properties into other bean dependencies
+
+
+You accidentally committed on the "master" branch instead of "feature/login". Describe the process of correcting this mistake.
+First, you should check out the "feature/login" branch. There, copy the desired commit over using the git cherry-pick command. 
+Then, check out "master" again and
+ use git reset --hard HEAD~1 to undo the (on this branch) unwanted commit.
+
+
+
+You have accidentally deleted a branch. Is there any way to recover it and bring it back?
+Using the git reflog command, you are able to inspect all of the recent HEAD pointer movements in this repository.
+ If the deletion hasn't been too long ago, you should be able to find the last commit on this branch. 
+Using that commit's SHA-1 hash, you are then able to recreate the branch.
+
+
+
+"Tower Git client",
+
+
+Is it possible to edit an old commit's message, although newer commits have already been created?
+If the commit in question had been the very last commit, an easy solution would have been to use the --amend flag of git commit.
+ However, since other commits have been created afterwards, amending is not an option. 
+In such a case, Git's "interactive rebase" tool can be used to manipulate old commits - including their commit messages.
+
+List the branches that are merged into master:
+$git branch --merged
+
+delete the merged branch:
+$git branch -d issue#902
+
+ist the branches which are not-merged into master:
+$git branch --no-merged
+
+
+
+Get a list of all the local recorded history logs for all the references (‘master’, ‘uat’ and ‘prepod’) in this repository.
+git reflog
+
+
+Identify the history stamp
+
+ Highlighted commit id: e2225bb along with the HEAD pointer index:4 
+ 
+ 
+ git checkout -b preprod HEAD@{4} 
+ 
+ 
+Managerial
+
+if something is not working in production.
+steps to 
+
+how u can handle team?
+
+
+how uch u will work for TCS?
+
+
+how hiberanate handle concurrency and transaction?
+
+
+how to handle request for millions record in rest API?
+
+
+
+
+
+The pipeline is a special type of Jenkins job - simply a sequence of steps controlled by a defined logic - which Orchestrates long-running activities that can span across multiple build agents. It is suitable for building pipelines (formerly known as workflows) and/or organizing complex activities that cannot be easily achieved using a freestyle job.
+
+
+
+Jenkins Pipelines can be either - a Declarative pipeline or a Scripted Pipeline. Declarative pipeline makes use of numerous, generic, predefined build steps/stages (i.e. code snippets) to build our job according to our build/automation needs whereas, with Scripted pipelines, the steps/stages can be custom-defined & used using a groovy syntax which provides better control & fine-tuned execution levels.
+
+
+Time-based Scheduled Triggers like a cron job.
+
+Event-based Triggers like SCM Actions (Git Commit, Pull Requests), WebHooks, etc.
+
+
+
+
+load() with specifying a LockMode for the LockOptions parameter
+buildLockRequest()
+setLockMode()
+
+
+
+
+To go or checkout to 1 commit before the latest commit, we use git checkout HEAD~1
+
+- To uncommit the last 3 commits without losing the changes, we first run git reset HEAD~3. Then we can see the changes made in the last 3 commits and then update it manually and commit it finally.
+
+- In order to uncommit the last 3 commits and also remove the changes, we can run the command: git reset --hard HEAD~3. This command will completely remove all the changes.
+
+- To look into the changes made in the last 3 commits, we can run git diff HEAD~3
+
+- To make a new commit by reverting the last 3 commits, we can run the command: git revert --no-commit HEAD~3...HEAD
+
+
+
+
+6. What does git stash apply command do?
+git stash apply command is used for bringing the works back to the working directory from the stack where the changes were stashed using git stash command.
+This helps the developers to resume their work where they had last left their work before switching to other branches.
